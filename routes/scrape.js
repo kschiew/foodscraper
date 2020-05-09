@@ -1,12 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const cheerio = require('cheerio');
-const request = require('request');
 
-const url = 'https://deliveroo.com.sg/cuisines/chinese-takeaway/singapore';
-const deliveroo_url = "https://deliveroo.com.sg/";
+const scrapeController = require('../controllers/scrapeController');
 
+router.post('/postFeatured', scrapeController.postFeatured);
+router.get('/getFeatured', scrapeController.getFeatured);
+//router.post('/byCuisine', scrapeController.postByCuisine);
+//router.post('/byFoodName', scrapeController.postByFoodName);
 
-router.get('/featured', scrapeController.getFeaturedList);
-router.post('/byCuisine', scrapeController.postByCuisine);
-router.post('/byFoodName', scrapeController.postByFoodName);
+module.exports = router;
