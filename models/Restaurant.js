@@ -1,10 +1,9 @@
 class Restaurant {
-    constructor(company, name, foods, timeAway, categories) {
+    constructor(company, name, image, timeAway) {
         this.company = company;
         this.name = name;
-        this.foods = foods;
+        this.image = image;
         this.timeAway = timeAway;
-        this.categories = categories;
     }
 
     updateFoods(foods) {
