@@ -41,9 +41,9 @@ exports.getDeliveroFeatured = async (req, res, body) => {
     console.log(output);
 };
 
-exports.getFoodPandaFeatured = async (req, res, next) => {
+exports.postFoodPandaFeatured = async (req, res, next) => {
     console.log("reached getFeatured");
-    const postalCode = "119618";
+    const postalCode = req.body.postalCode;
 
     const browser = await puppeteer.launch({headless: false});
     const page = await browser.newPage();
@@ -72,6 +72,6 @@ exports.getFoodPandaFeatured = async (req, res, next) => {
         });
     });
 
-    console.log(output);
+    res.send(output);
 
 };

@@ -3,8 +3,8 @@ const router = express.Router();
 
 const scrapeController = require('../controllers/scrapeController');
 
-//router.post('/postFeatured', scrapeController.postFeatured);
-router.get('/', scrapeController.getFoodPandaFeatured);
+router.post('/featured', scrapeController.postFoodPandaFeatured);
+//router.get('/', scrapeController.getFoodPandaFeatured);
 //router.post('/byCuisine', scrapeController.postByCuisine);
 //router.post('/byFoodName', scrapeController.postByFoodName);
 
