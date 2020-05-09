@@ -36,32 +36,31 @@ exports.getFeatured = async (req, res, body) => {
     console.log("reached getFeatured");
     const postalCode = "119618";
     console.log(postalCode);
-    const browser = await puppeteer.launch();
+
+    const browser = await puppeteer.launch({ headless : false});
     const page = await browser.newPage();
-    await page.setDefaultNavigationTimeout(0);
 
     await page.goto(deliverooUrl);
 
-    page.focus('input[id="location-search"]');
-    page.keyboard.type(postalCode);
-    page.evaluate((postalCode) => {
-       document.querySelector('button[tabindex="0"]').value = postalCode;
-    }, postalCode);
-    await page.click('button[tabindex="0"]');
+    //await page.focus('input[id="location-search"]');
+    await page.focus('input[id="location-search"]');
+    await page.keyboard.type(postalCode);
+    //await page.click('button[tabindex="0"]');
+    await page.keyboard.press('Enter');
 
     console.log(page.url());
     await page.waitForNavigation();
-    console.log(page.url());
 
+    await page.waitForSelector('button[aria-label="Close"]')
+        .then(() => page.click('button[aria-label="Close"]'));
 
-    request(page.url(), (error, response, html) => {
-        const featuredRestaurants = [];
-        const $ = cheerio.load(html);
-        restaurantCards = $('div[class="HomeFeedUICard-9e4c25acad3130ed"].a')
-            .each((i, elem) => {
-                //featured_restaurants.add(new Restaurant(elem['data']));
-                console.log(elem);
-            });
-    });
+    console.log("after closing popup");
+
+    const output = [];
+    const cards = await page.$$('ul > li[class^="HomeFeedUILines"] > span > p', elem => elem);
+    for (const card of cards) {
+        output.push(await page.evaluate(elem => elem.innerText, card));
+    }
+    console.log(output);
 };
 
