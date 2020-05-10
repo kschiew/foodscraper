@@ -7,6 +7,43 @@ const puppeteer = require('puppeteer');
 const deliverooUrl = 'https://deliveroo.com.sg';
 const foodPandaUrl = 'https://foodpanda.sg';
 
+const navigateByPostalCode = async (page, url, postalCode) => {
+    await page.goto(url);
+
+    await page.focus('input[id="delivery-information-postal-index"]');
+    await page.keyboard.type(postalCode);
+    await page.evaluate(() => {
+        document.querySelectorAll('button')[3].click();
+    });
+
+    await page.waitForNavigation();
+};
+
+const navigateBySearch = async(page, searchPhrase) => {
+    await page.evaluate(() => document.querySelector('button[class="search-clear hide"]').click());
+    await page.waitForSelector('input[class="restaurants-search-input"]');
+    await page.focus('input[class="restaurants-search-input"]');
+    await page.keyboard.type(searchPhrase);
+    await page.waitFor(3000);
+};
+
+const scrapeRestaurants = async page => {
+    const output = await page.evaluate(() => {
+        //const tile = document.querySelector('figure[class^="vendor-tile"]');
+        const tiles = document.querySelectorAll('figure[class^="vendor-tile"]');
+        return Array.from(tiles).map(tile => {
+            return {
+                company: "Food Panda",
+                restaurant: tile.querySelector('span[class^="name fn"]').innerText,
+                imageurl: tile.querySelector('div[class^="vendor-picture"]').getAttribute('data-src'),
+                timeaway: tile.querySelector('span[class="badge-info"]').innerText
+            }
+        });
+    });
+    return output;
+
+};
+
 exports.getDeliveroFeatured = async (req, res, body) => {
     console.log("reached getFeatured");
     const postalCode = "119618";
@@ -48,30 +85,22 @@ exports.postFoodPandaFeatured = async (req, res, next) => {
     const browser = await puppeteer.launch({headless: false});
     const page = await browser.newPage();
 
-    await page.goto(foodPandaUrl);
+    await navigateByPostalCode(page, foodPandaUrl, postalCode);
 
-    await page.focus('input[id="delivery-information-postal-index"]');
-    await page.keyboard.type(postalCode);
-    page.evaluate(() => {
-        document.querySelectorAll('button')[3].click();
-    });
+    res.send(await scrapeRestaurants(page));
 
-    await page.waitForNavigation();
-    console.log(page.url());
+};
 
-    const output = await page.evaluate(() => {
-        //const tile = document.querySelector('figure[class^="vendor-tile"]');
-        const tiles = document.querySelectorAll('figure[class^="vendor-tile"]');
-        return Array.from(tiles).map(tile => {
-            return {
-                company: "Food Panda",
-                restaurant: tile.querySelector('span[class^="name fn"]').innerText,
-                imageurl: tile.querySelector('div[class^="vendor-picture"]').getAttribute('data-src'),
-                timeaway: tile.querySelector('span[class="badge-info"]').innerText
-            }
-        });
-    });
+exports.postSearch = async (req, res, next) => {
+    const postalCode = req.body.postalCode;
+    const searchPhrase = req.body.searchPhrase;
 
-    res.send(output);
+    const browser = await puppeteer.launch({headless: false});
+    const page = await browser.newPage();
+
+    await navigateByPostalCode(page, foodPandaUrl, postalCode);
+    await navigateBySearch(page, searchPhrase);
+
+    res.send(await scrapeRestaurants(page));
 
 };
