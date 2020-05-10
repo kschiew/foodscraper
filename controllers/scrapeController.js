@@ -32,14 +32,18 @@ const scrapeRestaurants = async page => {
         //const tile = document.querySelector('figure[class^="vendor-tile"]');
         const tiles = document.querySelectorAll('figure[class^="vendor-tile"]');
         return Array.from(tiles).map(tile => {
+            const imageurl = tile.querySelector('div[class^="vendor-picture"]').getAttribute('data-src');
+            const timeaway = tile.querySelector('span[class="badge-info"]').innerText;
             return {
                 company: "Food Panda",
                 restaurant: tile.querySelector('span[class^="name fn"]').innerText,
-                imageurl: tile.querySelector('div[class^="vendor-picture"]').getAttribute('data-src'),
-                timeaway: tile.querySelector('span[class="badge-info"]').innerText
+                imageurl: imageurl.split('|')[1],
+                timeaway: timeaway.replace(/\D/g,'')
             }
-        });
+        })
+            .filter(elem => elem.timeaway.length === 2);
     });
+    console.log(output);
     return output;
 
 };
